@@ -1,3 +1,4 @@
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Dashboard, Cabins, Bookings, Users, Login, NotFound, Account, Settings } from "./pages";
 import { MainLayout } from "./ui";
@@ -26,6 +27,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      <ReactQueryDevtools initialIsOpen={false} />
     </>
   );
 }
