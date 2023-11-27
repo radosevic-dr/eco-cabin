@@ -1,5 +1,6 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from "react-hot-toast";
 import { Dashboard, Cabins, Bookings, Users, Login, NotFound, Account, Settings } from "./pages";
 import { MainLayout } from "./ui";
 import GlobalStyles from "./styles/GlobalStyles";
@@ -28,6 +29,26 @@ function App() {
         </Routes>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={12}
+        containerStyle={{ margin: "10px" }}
+        toastOptions={{
+          success: {
+            duration: 3000,
+          },
+          error: {
+            duration: 3000
+          },
+          style: {
+            fontSize: "2rem",
+            maxWidth: "30rem",
+            padding: "2rem 3rem",
+            backgroundColor: "var(--color-gray-200)"
+          }
+        }}
+      />
     </>
   );
 }
