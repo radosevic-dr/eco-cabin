@@ -28,32 +28,52 @@ async function deleteCabin(id) {
 
 }
 
-async function addCabin(newCabin) {
+{ 'https://lurzufojalloulfozkms.supabase.co/storage/v1/object/public/cabin-img/cabFour.avif?t=2023-11-28T10%3A04%3A02.370Z'; }
 
-    const imgName = `${Math.random()}-${newCabin.imgUrl.name}}`;
+async function addCabin(newCabin) {
+    const imgName = `${newCabin.imgUrl.name}`.replaceAll("/", "");
     const imgUrl = `${supabaseUrl}/storage/v1/object/public/cabin-img/${imgName}`;
-    const { data: cabin, error } = await supabase
+  
+    // eslint-disable-next-line no-useless-catch
+    try {
+      const { data: cabin, error } = await supabase
         .from('cabins')
         .insert([{ ...newCabin, imgUrl }]);
-
-    if (error) {
+  
+      if (error) {
         throw new Error("Error: Unable to add cabin");
-    }
-
-
-    const { error: storageError } = await supabase
+      }
+  
+      // Upload image to Supabase Storage
+      const { error: storageError } = await supabase
         .storage
         .from('cabin-img')
         .upload(imgName, newCabin.imgUrl);
-
-    if (storageError) {
+  
+      if (storageError) {
+        // If image upload fails, delete the previously added cabin record
         await supabase.from('cabins').delete().eq('id', cabin.id);
         throw new Error("Error: Unable to upload image");
+      }
+  
+      return cabin;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
 
+  async function editCabin(id, updatedCabin) {
+    const { data, error } = await supabase
+        .from('cabins')
+        .update({ ...updatedCabin })
+        .eq('id', id);
+
+    if (error) {
+        throw new Error("Error: Unable to update cabin");
     }
 
-    return cabin;
-
+    return data[0]; // Return the updated cabin data from Supabase
 }
 
-export { getCabins, deleteCabin, addCabin };
+export { getCabins, deleteCabin, addCabin, editCabin };

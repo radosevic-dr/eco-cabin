@@ -1,4 +1,5 @@
-export const validateInputs = (inputName, validateValue = false) => {
+export const validateInputs = (...props) => {
+    const { inputName, validateValue = false, isEditActive = false } = props;
     switch (inputName) {
         case 'name':
             return {
@@ -34,14 +35,10 @@ export const validateInputs = (inputName, validateValue = false) => {
             };
         case 'discount':
             return {
-                required: 'Discount is required, put 0 for no discount',
-                min: {
-                    value: 0,
-                    message: "Discount must be at least 0"
-                },
-                // validate: {
-                //     lessThanPrice: (value) => validateValue === false ? "Discount should be less than price" : null
-                // }
+                required: false,
+                validate: {
+                    lessThanPrice: (value) => validateValue < value ? "Discount should be less than price" : null
+                }
             };
 
         case 'description':
@@ -54,7 +51,7 @@ export const validateInputs = (inputName, validateValue = false) => {
             };
         case 'imgUrl':
             return {
-                required: 'Image is required',
+                required: isEditActive ? false : 'Image is required',
             };
         default:
             return {};

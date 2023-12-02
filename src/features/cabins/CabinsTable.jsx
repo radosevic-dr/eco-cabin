@@ -1,36 +1,11 @@
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCabins, deleteCabin } from "../../services/apiCabins";
 import { toast } from "react-hot-toast";
 import ClipLoader from "react-spinners/ClipLoader";
+import { Table } from "./Table";
 import styled from "styled-components";
-
-const Loader = styled.div`
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%; 
-`;
-
-const Table = styled.table`
-    width: 100%;
-    gap: 2rem;
-    margin-top: 4rem;
-    
-    thead{
-        background: var(--color-brand-50:)
-    }
-    tbody{
-        tr{
-            text-align: center;
-            td:first-child{
-                width: 10rem;
-                img{
-                    width: 100%;
-                }
-            }
-        }
-    }
-`;
+import { AddCabin } from "./AddCabin";
 
 const Btn = styled.button`
     padding: 1rem;
@@ -40,6 +15,9 @@ const Btn = styled.button`
     &:hover{
         background-color: var(--color-brand-50);
     }
+    &:first-of-type{
+        margin-right: 1rem;
+    }
 `;
 
 const StyledCabinTable = styled.div`
@@ -47,8 +25,10 @@ const StyledCabinTable = styled.div`
 `;
 
 function CabinsTable() {
+    const [editCabinId, setEditCabinId] = useState(null);
+    const [showForm, setShowForm] = useState(false);
     const queryClient = useQueryClient();
-    const { isLoading, data: cabins, error } = useQuery({
+    const { isLoading, data: cabins } = useQuery({
         queryKey: ["cabin"],
         queryFn: getCabins,
     });
@@ -58,47 +38,63 @@ function CabinsTable() {
         onSuccess: () => {
             toast("Cabin deleted");
             queryClient.invalidateQueries({ queryKey: ["cabins"] });
-
         },
-        onError: err => toast(err.message)
+        onError: (err) => toast(err.message),
     });
 
-    if (isLoading || loading) return <Loader>
-        <ClipLoader color="gray" />
-    </Loader>;
+    if (isLoading || loading) return <ClipLoader color="gray" />;
 
-    {/* const { id, created_at, description, discount, imgUrl, maxCap, name, price } = cabin; */ }
+    const tHeaders = ["image", "Cabin", "Capacity", "Price", "Discount"];
     return (
         <StyledCabinTable>
-            <Table>
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Cabin</th>
-                        <th>Capacity</th>
-                        <th>Price</th>
-                        <th>Discount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {cabins.map(cabin => {
-                        const { id, created_at, description, discount, imgUrl, maxCap, name, price } = cabin;
+            <>
+                <Table>
+                    <thead>
+                        <tr>
+                            {tHeaders.map((th, index) => (
+                                <th key={index}>{th}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {cabins.map((cabin) => {
+                            const { id, created_at, discount, imgUrl, maxCap, name, price } = cabin;
 
-                        return (
-                            <tr key={id}>
-                                <td><img src={imgUrl} alt={name} /></td>
-                                <td>{name}</td>
-                                <td>{maxCap}</td>
-                                <td>{price}</td>
-                                <td>{discount}</td>
-                                <td>
-                                    <Btn onClick={() => mutate(id)}>Delete</Btn>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </Table>
+                            return (
+                                <React.Fragment key={`${id}-${created_at}`}>
+                                    <tr>
+                                        <td>
+                                            <img src={imgUrl} alt={name} />
+                                        </td>
+                                        <td>{name}</td>
+                                        <td>{maxCap}</td>
+                                        <td>{price}</td>
+                                        <td>{discount}</td>
+                                        <td>
+                                            <Btn onClick={() => {
+                                                setEditCabinId(id)
+                                                setShowForm(prev => !prev)
+                                                }}>
+                                                {!editCabinId || editCabinId !== id ? "Edit" : "Close"}
+                                            </Btn>
+                                            <Btn onClick={() => mutate(id)}>Delete</Btn>
+                                        </td>
+                                    </tr>
+                                    {editCabinId === id && showForm ? (
+                                        <tr>
+                                            <td colSpan="6">
+                                                <div>
+                                                    <AddCabin cabinToEdit={cabin} />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : null}
+                                </React.Fragment>
+                            );
+                        })}
+                    </tbody>
+                </Table>
+            </>
         </StyledCabinTable>
     );
 }
